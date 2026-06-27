@@ -1,0 +1,93 @@
+{
+  "app_name": "DriftTune",
+  "live": "V ŽIVO",
+  "pit": "BOX",
+  "signal_lost": "SIGNAL IZGUBLJEN",
+  "connecting": "Povezovanje...",
+
+  "params": {
+    "rpm":           "Vrtljaji motorja",
+    "tps":           "Položaj plina",
+    "afr":           "Razmerje zrak/gorivo",
+    "boost":         "Boost tlak",
+    "egt":           "Temp. izpušnih plinov",
+    "h2o":           "Temp. hladilne vode",
+    "oil_temp":      "Temp. olja",
+    "oil_press":     "Tlak olja",
+    "fuel_press":    "Tlak goriva",
+    "ignition":      "Prižig",
+    "knock":         "Nivo klenkanja",
+    "injector_dc":   "Injektorji",
+    "battery":       "Napetost akum.",
+    "spd":           "Hitrost",
+    "gear":          "Prestava",
+    "gx":            "Bočni G",
+    "gy":            "Vzdolžni G",
+    "drift_angle":   "Drift kot",
+    "g_magnitude":   "G sila",
+    "wheel_slip_r":  "Zdrs zadaj",
+    "steering":      "Kot volana",
+    "brake":         "Tlak zavor",
+    "handbrake":     "Ročna zavora",
+    "clutch":        "Sklopka",
+    "ai_score":      "AI ocena",
+    "driver_style":  "Stil voznika",
+    "track_sector":  "Sektor",
+    "lap_number":    "Krog",
+    "lap_time":      "Čas kroga",
+    "wsp_fl":        "Hitrost kolesa SL",
+    "wsp_fr":        "Hitrost kolesa SD",
+    "wsp_rl":        "Hitrost kolesa ZL",
+    "wsp_rr":        "Hitrost kolesa ZD",
+    "tire_temp_fl":  "Temp. gume SL",
+    "tire_temp_fr":  "Temp. gume SD",
+    "tire_temp_rl":  "Temp. gume ZL",
+    "tire_temp_rr":  "Temp. gume ZD",
+    "tire_press_fl": "Tlak gume SL",
+    "tire_press_fr": "Tlak gume SD",
+    "tire_press_rl": "Tlak gume ZL",
+    "tire_press_rr": "Tlak gume ZD",
+    "susp_fl":       "Vzmetenje SL",
+    "susp_fr":       "Vzmetenje SD",
+    "susp_rl":       "Vzmetenje ZL",
+    "susp_rr":       "Vzmetenje ZD"
+  },
+
+  "driver_styles": {
+    "AGGRESSIVE": "Agresiven",
+    "TECHNICAL":  "Tehničen",
+    "HYBRID":     "Hibridni"
+  },
+
+  "sectors": {
+    "S1": "Iniciacija",
+    "S2": "Clipping 1",
+    "S3": "Tranzicija",
+    "S4": "Clipping 2",
+    "S5": "Izhod"
+  },
+
+  "alarms": {
+    "WARNING":  "Opozorilo",
+    "CRITICAL": "Kritično"
+  },
+
+  "ui": {
+    "dashboard":      "Nadzorna plošča",
+    "analysis":       "Analiza",
+    "settings":       "Nastavitve",
+    "cars":           "Avti",
+    "session":        "Seja",
+    "lap":            "Krog",
+    "run":            "Vožnja",
+    "compare":        "Primerjava",
+    "export_csv":     "Izvoz CSV",
+    "export_pdf":     "Izvoz PDF",
+    "track_map":      "Karta proge",
+    "g_force_plot":   "Graf G sil",
+    "ai_coaching":    "AI trener",
+    "no_data":        "Ni podatkov",
+    "select_car":     "Izberi avto",
+    "all_cars":       "Vsi avti"
+  }
+}

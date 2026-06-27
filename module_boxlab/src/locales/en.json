@@ -1,0 +1,93 @@
+{
+  "app_name": "DriftTune",
+  "live": "LIVE",
+  "pit": "PIT",
+  "signal_lost": "SIGNAL LOST",
+  "connecting": "Connecting...",
+
+  "params": {
+    "rpm":           "Engine RPM",
+    "tps":           "Throttle",
+    "afr":           "Air/Fuel Ratio",
+    "boost":         "Boost",
+    "egt":           "Exhaust Temp",
+    "h2o":           "Coolant Temp",
+    "oil_temp":      "Oil Temp",
+    "oil_press":     "Oil Pressure",
+    "fuel_press":    "Fuel Pressure",
+    "ignition":      "Ignition Timing",
+    "knock":         "Knock Level",
+    "injector_dc":   "Injector Duty",
+    "battery":       "Battery",
+    "spd":           "Speed",
+    "gear":          "Gear",
+    "gx":            "Lateral G",
+    "gy":            "Long. G",
+    "drift_angle":   "Drift Angle",
+    "g_magnitude":   "G Force",
+    "wheel_slip_r":  "Rear Slip",
+    "steering":      "Steering Angle",
+    "brake":         "Brake Pressure",
+    "handbrake":     "Handbrake",
+    "clutch":        "Clutch",
+    "ai_score":      "AI Score",
+    "driver_style":  "Driver Style",
+    "track_sector":  "Sector",
+    "lap_number":    "Lap",
+    "lap_time":      "Lap Time",
+    "wsp_fl":        "Wheel Speed FL",
+    "wsp_fr":        "Wheel Speed FR",
+    "wsp_rl":        "Wheel Speed RL",
+    "wsp_rr":        "Wheel Speed RR",
+    "tire_temp_fl":  "Tire Temp FL",
+    "tire_temp_fr":  "Tire Temp FR",
+    "tire_temp_rl":  "Tire Temp RL",
+    "tire_temp_rr":  "Tire Temp RR",
+    "tire_press_fl": "Tire Press FL",
+    "tire_press_fr": "Tire Press FR",
+    "tire_press_rl": "Tire Press RL",
+    "tire_press_rr": "Tire Press RR",
+    "susp_fl":       "Suspension FL",
+    "susp_fr":       "Suspension FR",
+    "susp_rl":       "Suspension RL",
+    "susp_rr":       "Suspension RR"
+  },
+
+  "driver_styles": {
+    "AGGRESSIVE": "Aggressive",
+    "TECHNICAL":  "Technical",
+    "HYBRID":     "Hybrid"
+  },
+
+  "sectors": {
+    "S1": "Initiation",
+    "S2": "Clipping 1",
+    "S3": "Transition",
+    "S4": "Clipping 2",
+    "S5": "Exit"
+  },
+
+  "alarms": {
+    "WARNING":  "Warning",
+    "CRITICAL": "Critical"
+  },
+
+  "ui": {
+    "dashboard":      "Dashboard",
+    "analysis":       "Analysis",
+    "settings":       "Settings",
+    "cars":           "Cars",
+    "session":        "Session",
+    "lap":            "Lap",
+    "run":            "Run",
+    "compare":        "Compare",
+    "export_csv":     "Export CSV",
+    "export_pdf":     "Export PDF",
+    "track_map":      "Track Map",
+    "g_force_plot":   "G-Force Plot",
+    "ai_coaching":    "AI Coaching",
+    "no_data":        "No data",
+    "select_car":     "Select car",
+    "all_cars":       "All cars"
+  }
+}
