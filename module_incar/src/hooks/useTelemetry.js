@@ -20,7 +20,7 @@ function generateMock(t) {
   if (h2o > 100) alarms.push({ alarm_id:'h2o_warn', parameter:'h2o', value: h2o, threshold: 100, severity:'WARNING', message:'High coolant temp' });
   if (knock > 30) alarms.push({ alarm_id:'knock_warn', parameter:'knock', value: knock, threshold: 30, severity:'WARNING', message:'Knock detected' });
   return {
-    raw: { rpm, spd, tps, brake, steering, gear, h2o, oil_press, knock, battery: 13.8, clutch: 0, gx: Math.sin(t/400)*1.8, gy: Math.cos(t/600)*1.2 },
+    raw: { rpm, spd, tps, brake, steering, gear, h2o, oil_press, knock, battery: 13.8, clutch: 0, gx: Math.sin(t/400)*1.8, gy: Math.cos(t/600)*1.2, oil_temp: 95 + Math.sin(t/6000)*18, boost: Math.max(0, 0.8 + Math.sin(t/700)*0.9 + (Math.random()-0.5)*0.1) },
     computed: { drift_angle, ai_score, driver_style: 'AGGRESSIVE', g_magnitude: Math.sqrt(Math.pow(Math.sin(t/400)*1.8,2)+Math.pow(Math.cos(t/600)*1.2,2)) },
     alarms,
     track_sector: sector,
