@@ -91,14 +91,15 @@ body::before {
   line-height: 1;
 }
 .top-logo {
-  font-family: monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  color: var(--gold);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.top-logo span {
-  color: var(--red);
+.top-logo-img {
+  height: 26px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 4px rgba(204,17,17,0.4));
 }
 .status-pill {
   font-size: 0.55rem;

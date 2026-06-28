@@ -28,8 +28,7 @@ function TopBar({ data, status }) {
       </div>
 
       <div className="top-logo">
-        <span>DRIFT</span><span>TUNE</span>
-        <div style={{ fontSize: '0.45rem', color: '#555', marginTop: 1 }}>InoCore Performance</div>
+        <img src="/logo.png" alt="InoCore Performance Motorsport" className="top-logo-img" />
       </div>
 
       <div className="top-right">
