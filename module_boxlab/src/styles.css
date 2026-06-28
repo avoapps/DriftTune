@@ -88,39 +88,14 @@ html, body, #root {
 .topbar-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
   text-decoration: none;
 }
 
-.logo-mark {
-  width: 28px;
-  height: 28px;
-  background: var(--accent);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.05em;
-  flex-shrink: 0;
-}
-
-.logo-text {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.04em;
-}
-
-.logo-sub {
-  font-size: 9px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 1px;
+.topbar-logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 4px rgba(204,17,17,0.35));
 }
 
 .live-badge {

@@ -15,11 +15,7 @@ export default function TopBar({ t, lang, setLang, activeTab, setActiveTab, conn
   return (
     <header className="topbar">
       <div className="topbar-logo">
-        <div className="logo-mark">DT</div>
-        <div>
-          <div className="logo-text">{t('app_name')}</div>
-          <div className="logo-sub">InoCore Performance</div>
-        </div>
+        <img src="/logo.png" alt="InoCore Performance Motorsport" className="topbar-logo-img" />
       </div>
 
       <div className={`live-badge ${state}`}>
