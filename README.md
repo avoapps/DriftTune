@@ -53,6 +53,19 @@ cd module_lte && python lte_receiver.py
 cd module_boxlab && npm start
 ```
 
+### OBD-II (ELM327 adapter):
+
+```bash
+# USB adapter
+python module_can/obd_reader.py --port /dev/ttyUSB0
+
+# Bluetooth adapter
+python module_can/obd_reader.py --port /dev/rfcomm0
+
+# WiFi adapter (ELM327 WiFi)
+python module_can/obd_reader.py --wifi --wifi-host 192.168.0.10
+```
+
 ### Mock CAN (no hardware):
 
 ```bash
