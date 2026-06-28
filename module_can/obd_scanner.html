@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DriftTune — OBD Scanner</title>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --card: #14141a;
+  --border: rgba(255,255,255,0.08);
+  --red: #CC1111;
+  --gold: #C9A84C;
+  --ok: #00C853;
+  --warn: #FFB800;
+  --muted: #6B6B7E;
+  --text: #F0F0F0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; font-size: 14px; min-height: 100vh; }
+
+/* ── Header ── */
+.header { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+.header-logo { font-family: monospace; font-size: 1rem; letter-spacing: 0.15em; }
+.header-logo span { color: var(--red); }
+.header-title { color: var(--gold); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.status-pill { margin-left: auto; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; padding: 3px 10px; border-radius: 12px; border: 1px solid; }
+
+/* ── Layout ── */
+.layout { display: grid; grid-template-columns: 320px 1fr; gap: 0; height: calc(100vh - 57px); }
+
+/* ── Sidebar ── */
+.sidebar { border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+
+.section-title { font-size: 0.6rem; letter-spacing: 0.12em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
+
+/* Connection type tabs */
+.mode-tabs { display: flex; gap: 4px; }
+.mode-tab { flex: 1; padding: 8px 4px; text-align: center; font-size: 0.75rem; font-weight: 600; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+.mode-tab.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* Form */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; }
+.form-input { background: #1a1a22; border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 8px 10px; font-size: 0.8rem; font-family: monospace; outline: none; transition: border-color 0.15s; }
+.form-input:focus { border-color: var(--gold); }
+select.form-input option { background: #1a1a22; }
+
+/* Buttons */
+.btn { padding: 10px 16px; border-radius: 6px; border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s; width: 100%; letter-spacing: 0.04em; }
+.btn-primary { background: var(--red); color: #fff; }
+.btn-primary:hover { background: #e01515; }
+.btn-primary:disabled { background: #3a1010; color: #663333; cursor: not-allowed; }
+.btn-secondary { background: #1a1a22; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Connection info */
+.conn-info { background: #0e1a0e; border: 1px solid rgba(0,200,83,0.2); border-radius: 8px; padding: 12px; font-size: 0.75rem; display: none; }
+.conn-info.visible { display: block; }
+.conn-info-row { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.conn-info-label { color: var(--muted); }
+.conn-info-val { color: var(--ok); font-family: monospace; }
+
+/* Progress */
+.progress-wrap { display: none; }
+.progress-wrap.visible { display: block; }
+.progress-bar-bg { background: #1a1a22; border-radius: 4px; height: 6px; margin: 8px 0; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.2s; }
+.progress-msg { font-size: 0.65rem; color: var(--muted); font-family: monospace; }
+
+/* Ports list */
+.ports-list { display: flex; flex-direction: column; gap: 4px; }
+.port-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; }
+.port-item:hover { border-color: var(--gold); }
+.port-item.selected { border-color: var(--red); background: rgba(204,17,17,0.08); }
+.port-badge { font-size: 0.55rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.08em; }
+.badge-bt { background: rgba(100,100,255,0.2); color: #8888ff; }
+.badge-usb { background: rgba(0,200,83,0.15); color: var(--ok); }
+.port-name { font-family: monospace; font-size: 0.75rem; }
+
+/* ── Main area ── */
+.main { overflow-y: auto; padding: 20px 24px; }
+
+/* Stats bar */
+.stats-bar { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; min-width: 100px; }
+.stat-val { font-family: monospace; font-size: 1.4rem; font-weight: 900; line-height: 1; }
+.stat-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.08em; margin-top: 2px; }
+
+/* Category filter */
+.cat-filter { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.cat-btn { padding: 4px 12px; font-size: 0.7rem; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+.cat-btn.active { border-color: var(--gold); color: var(--gold); }
+
+/* Signal table */
+.signal-table { width: 100%; border-collapse: collapse; }
+.signal-table th { text-align: left; font-size: 0.6rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 6px 10px; border-bottom: 1px solid var(--border); }
+.signal-table td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.8rem; }
+.signal-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.sig-live { color: var(--ok); font-family: monospace; font-weight: 700; }
+.sig-supported { color: var(--warn); font-family: monospace; }
+.sig-dead { color: #333; }
+.sig-unit { color: var(--muted); font-size: 0.7rem; margin-left: 3px; }
+.sig-cat { font-size: 0.6rem; padding: 2px 7px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--muted); }
+
+.watch-btn { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+.watch-btn.watching { border-color: var(--ok); color: var(--ok); background: rgba(0,200,83,0.08); }
+
+/* Live panel */
+.live-panel { position: fixed; bottom: 0; left: 320px; right: 0; background: #0d0d12; border-top: 1px solid var(--border); padding: 10px 24px; display: none; }
+.live-panel.visible { display: flex; gap: 16px; flex-wrap: wrap; }
+.live-item { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.live-val { font-family: monospace; font-size: 1.1rem; font-weight: 900; color: var(--ok); line-height: 1; }
+.live-label { font-size: 0.55rem; color: var(--muted); margin-top: 2px; }
+
+/* Empty states */
+.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty-text { font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">DRIFT<span>TUNE</span></div>
+    <div class="header-title">OBD-II Connection Tester & Signal Scanner</div>
+  </div>
+  <div class="status-pill" id="statusPill" style="color:var(--muted);border-color:var(--muted)">DISCONNECTED</div>
+</div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+
+    <!-- Connection type -->
+    <div>
+      <div class="section-title">Connection Type</div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" onclick="setMode('usb')">USB</button>
+        <button class="mode-tab" onclick="setMode('bt')">Bluetooth</button>
+        <button class="mode-tab" onclick="setMode('wifi')">WiFi</button>
+      </div>
+    </div>
+
+    <!-- USB / BT form -->
+    <div id="formSerial">
+      <div class="section-title">Port</div>
+      <div class="ports-list" id="portsList">
+        <div style="color:var(--muted);font-size:0.75rem">Scanning ports...</div>
+      </div>
+      <div style="margin-top:10px" class="form-group">
+        <label class="form-label">Or enter manually</label>
+        <input class="form-input" id="portInput" placeholder="/dev/cu.OBDII" />
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label class="form-label">Baudrate (optional)</label>
+        <select class="form-input" id="baudrateInput">
+          <option value="">Auto</option>
+          <option value="9600">9600</option>
+          <option value="38400">38400</option>
+          <option value="115200">115200</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- WiFi form -->
+    <div id="formWifi" style="display:none">
+      <div class="section-title">WiFi ELM327</div>
+      <div class="form-group">
+        <label class="form-label">IP Address</label>
+        <input class="form-input" id="wifiHost" value="192.168.0.10" placeholder="192.168.0.10" />
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label class="form-label">Port</label>
+        <input class="form-input" id="wifiPort" value="35000" placeholder="35000" />
+      </div>
+    </div>
+
+    <!-- Connect button -->
+    <button class="btn btn-primary" id="btnConnect" onclick="doConnect()">Connect</button>
+
+    <!-- Connection info -->
+    <div class="conn-info" id="connInfo">
+      <div class="conn-info-row"><span class="conn-info-label">Protocol</span><span class="conn-info-val" id="infoProtocol">—</span></div>
+      <div class="conn-info-row"><span class="conn-info-label">Port</span><span class="conn-info-val" id="infoPort">—</span></div>
+    </div>
+
+    <!-- Scan button -->
+    <button class="btn btn-secondary" id="btnScan" onclick="doScan()" disabled>Scan All Signals</button>
+
+    <!-- Progress -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="section-title">Scanning</div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-msg" id="progressMsg">—</div>
+    </div>
+
+    <!-- Disconnect -->
+    <button class="btn btn-secondary" id="btnDisconnect" onclick="doDisconnect()" disabled style="margin-top:auto">Disconnect</button>
+
+  </div>
+
+  <!-- ── Main ── -->
+  <div class="main" id="mainArea">
+    <div class="empty">
+      <div class="empty-icon">🔌</div>
+      <div class="empty-text">Select connection type, choose port and connect to your OBD adapter.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Live bar -->
+<div class="live-panel" id="livePanel"></div>
+
+<script>
+let mode = 'usb';
+let selectedPort = null;
+let scanResults = [];
+let activeCategory = 'All';
+let watchingCmds = new Set();
+let liveInterval = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.onload = () => {
+  loadPorts();
+};
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['usb','bt','wifi'][i] === m);
+  });
+  document.getElementById('formSerial').style.display = m !== 'wifi' ? 'block' : 'none';
+  document.getElementById('formWifi').style.display   = m === 'wifi' ? 'block' : 'none';
+}
+
+// ── Port discovery ─────────────────────────────────────────────────────────────
+async function loadPorts() {
+  const res = await fetch('/ports').then(r => r.json());
+  const el = document.getElementById('portsList');
+  if (!res.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:0.75rem">No ports found. Enter manually below.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  res.forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'port-item';
+    d.innerHTML = `<span class="port-badge ${p.type === 'BT' ? 'badge-bt' : 'badge-usb'}">${p.type}</span>
+                   <span class="port-name">${p.port}</span>`;
+    d.onclick = () => {
+      document.querySelectorAll('.port-item').forEach(x => x.classList.remove('selected'));
+      d.classList.add('selected');
+      selectedPort = p.port;
+      document.getElementById('portInput').value = p.port;
+    };
+    el.appendChild(d);
+  });
+}
+
+// ── Connect ───────────────────────────────────────────────────────────────────
+async function doConnect() {
+  const btn = document.getElementById('btnConnect');
+  btn.disabled = true;
+  btn.textContent = 'Connecting...';
+  setStatus('connecting', 'CONNECTING');
+
+  const body = { mode };
+  if (mode !== 'wifi') {
+    body.port = document.getElementById('portInput').value || selectedPort;
+    body.baudrate = document.getElementById('baudrateInput').value || null;
+  } else {
+    body.wifi_host = document.getElementById('wifiHost').value;
+    body.wifi_port = parseInt(document.getElementById('wifiPort').value);
+  }
+
+  try {
+    const res = await fetch('/connect', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    }).then(r => r.json());
+
+    if (res.ok) {
+      setStatus('connected', 'CONNECTED');
+      document.getElementById('infoProtocol').textContent = res.protocol;
+      document.getElementById('infoPort').textContent = res.port;
+      document.getElementById('connInfo').classList.add('visible');
+      document.getElementById('btnScan').disabled = false;
+      document.getElementById('btnDisconnect').disabled = false;
+      btn.textContent = 'Reconnect';
+      showMain('connected');
+    } else {
+      setStatus('error', 'ERROR');
+      showError(res.error);
+      btn.disabled = false;
+      btn.textContent = 'Connect';
+    }
+  } catch(e) {
+    showError('Cannot reach scanner server.');
+    btn.disabled = false;
+    btn.textContent = 'Connect';
+  }
+}
+
+// ── Scan ──────────────────────────────────────────────────────────────────────
+async function doScan() {
+  document.getElementById('btnScan').disabled = true;
+  document.getElementById('progressWrap').classList.add('visible');
+  showMain('scanning');
+
+  await fetch('/scan', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+
+  const poll = setInterval(async () => {
+    const p = await fetch('/progress').then(r => r.json());
+    document.getElementById('progressFill').style.width = p.pct + '%';
+    document.getElementById('progressMsg').textContent = p.msg;
+
+    if (p.done) {
+      clearInterval(poll);
+      scanResults = p.results;
+      document.getElementById('progressWrap').classList.remove('visible');
+      document.getElementById('btnScan').disabled = false;
+      renderResults();
+    }
+  }, 400);
+}
+
+// ── Disconnect ────────────────────────────────────────────────────────────────
+async function doDisconnect() {
+  await fetch('/disconnect', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+  setStatus('idle', 'DISCONNECTED');
+  document.getElementById('connInfo').classList.remove('visible');
+  document.getElementById('btnScan').disabled = true;
+  document.getElementById('btnDisconnect').disabled = true;
+  document.getElementById('btnConnect').disabled = false;
+  document.getElementById('btnConnect').textContent = 'Connect';
+  watchingCmds.clear();
+  stopLive();
+  scanResults = [];
+  showMain('empty');
+}
+
+// ── Render results ────────────────────────────────────────────────────────────
+function renderResults(filterCat) {
+  if (!filterCat) filterCat = activeCategory;
+  activeCategory = filterCat;
+
+  const live    = scanResults.filter(s => s.live);
+  const sup     = scanResults.filter(s => s.supported && !s.live);
+  const dead    = scanResults.filter(s => !s.supported);
+  const cats    = ['All', ...new Set(scanResults.map(s => s.category))];
+  const filtered = scanResults.filter(s => filterCat === 'All' || s.category === filterCat);
+
+  let html = `
+    <div class="stats-bar">
+      <div class="stat-box"><div class="stat-val" style="color:var(--ok)">${live.length}</div><div class="stat-label">LIVE SIGNALS</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--warn)">${sup.length}</div><div class="stat-label">SUPPORTED (NO VALUE)</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--muted)">${dead.length}</div><div class="stat-label">NOT SUPPORTED</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:var(--gold)">${scanResults.length}</div><div class="stat-label">TOTAL CHECKED</div></div>
+    </div>
+    <div class="cat-filter">
+      ${cats.map(c => `<button class="cat-btn ${c === filterCat ? 'active' : ''}" onclick="renderResults('${c}')">${c}</button>`).join('')}
+    </div>
+    <table class="signal-table">
+      <thead><tr>
+        <th>Signal</th><th>Category</th><th>Value</th><th>Unit</th><th>Watch</th>
+      </tr></thead>
+      <tbody>
+  `;
+
+  filtered.forEach(s => {
+    const watching = watchingCmds.has(s.cmd);
+    let valHtml;
+    if (s.live)           valHtml = `<span class="sig-live" id="val_${s.cmd}">${s.value}</span>`;
+    else if (s.supported) valHtml = `<span class="sig-supported">—</span>`;
+    else                  valHtml = `<span class="sig-dead">✗</span>`;
+
+    html += `<tr>
+      <td>${s.label}</td>
+      <td><span class="sig-cat">${s.category}</span></td>
+      <td>${valHtml}</td>
+      <td><span class="sig-unit">${s.unit}</span></td>
+      <td>${s.live ? `<button class="watch-btn ${watching ? 'watching' : ''}" onclick="toggleWatch('${s.cmd}','${s.label}')" id="wb_${s.cmd}">${watching ? '● Live' : 'Watch'}</button>` : ''}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  document.getElementById('mainArea').innerHTML = html;
+}
+
+// ── Live watching ─────────────────────────────────────────────────────────────
+function toggleWatch(cmd, label) {
+  if (watchingCmds.has(cmd)) {
+    watchingCmds.delete(cmd);
+  } else {
+    watchingCmds.add(cmd);
+  }
+  updateWatchServer();
+  renderResults();
+  updateLivePanel();
+}
+
+function updateWatchServer() {
+  fetch('/watch', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ cmds: [...watchingCmds] })
+  });
+}
+
+function updateLivePanel() {
+  const panel = document.getElementById('livePanel');
+  if (!watchingCmds.size) {
+    panel.classList.remove('visible');
+    stopLive();
+    return;
+  }
+  panel.classList.add('visible');
+  startLive();
+}
+
+function startLive() {
+  if (liveInterval) return;
+  liveInterval = setInterval(async () => {
+    if (!watchingCmds.size) return;
+    const res = await fetch('/live').then(r => r.json());
+    const vals = res.values || {};
+
+    // Update table values
+    Object.entries(vals).forEach(([cmd, val]) => {
+      const el = document.getElementById(`val_${cmd}`);
+      if (el) el.textContent = val;
+    });
+
+    // Update live panel
+    const panel = document.getElementById('livePanel');
+    const sigMap = Object.fromEntries(scanResults.map(s => [s.cmd, s]));
+    panel.innerHTML = [...watchingCmds].map(cmd => {
+      const sig = sigMap[cmd] || {};
+      const val = vals[cmd] ?? '—';
+      return `<div class="live-item">
+        <div class="live-val">${val}<span style="font-size:0.65rem;color:var(--muted);margin-left:2px">${sig.unit||''}</span></div>
+        <div class="live-label">${sig.label||cmd}</div>
+      </div>`;
+    }).join('');
+  }, 500);
+}
+
+function stopLive() {
+  if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function setStatus(state, label) {
+  const colors = { connected:'var(--ok)', connecting:'var(--warn)', error:'var(--red)', idle:'var(--muted)' };
+  const pill = document.getElementById('statusPill');
+  pill.textContent = label;
+  pill.style.color = colors[state] || 'var(--muted)';
+  pill.style.borderColor = colors[state] || 'var(--muted)';
+}
+
+function showMain(state) {
+  const el = document.getElementById('mainArea');
+  if (state === 'empty') {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🔌</div><div class="empty-text">Select connection type, choose port and connect to your OBD adapter.</div></div>`;
+  } else if (state === 'connected') {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Connected! Click <strong>Scan All Signals</strong> to discover available PIDs.</div></div>`;
+  } else if (state === 'scanning') {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">Scanning signals... this may take 30–60 seconds.</div></div>`;
+  }
+}
+
+function showError(msg) {
+  document.getElementById('mainArea').innerHTML = `
+    <div class="empty">
+      <div class="empty-icon">⚠️</div>
+      <div class="empty-text" style="color:var(--red)">${msg}</div>
+    </div>`;
+}
+</script>
+</body>
+</html>
