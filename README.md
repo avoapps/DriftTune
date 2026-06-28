@@ -13,33 +13,55 @@ See [`docs/01_Architecture.md`](docs/01_Architecture.md)
 
 | Module | Path | Status |
 |--------|------|--------|
-| CAN Bus (M1) | `module_can/` | 🟡 Sprint 1 — simulator ready |
-| RPi Core (M2) | `module_core/` | 🔲 Sprint 2 |
-| In-Car UI (M2b) | `module_incar/` | 🔲 Sprint 4 |
-| LTE Transport (M3) | `module_lte/` | 🔲 Sprint 5 |
-| BoxLab UI (M4) | `module_boxlab/` | 🟡 Sprint 1 — i18n ready |
+| CAN Bus (M1) | `module_can/` | ✅ Sprint 1+6 — simulator + real CAN reader |
+| RPi Core (M2) | `module_core/` | ✅ Sprint 5 — compute, storage, WS server |
+| In-Car UI (M2b) | `module_incar/` | ✅ Sprint 3 — analog gauges, carbon fiber, responsive |
+| LTE Transport (M3) | `module_lte/` | ✅ Sprint 4 — delta encoding, msgpack, buffer |
+| BoxLab UI (M4) | `module_boxlab/` | ✅ Sprint 2 — full React dashboard |
 
-## Quick Start — Mock Simulator
+## Quick Start
+
+### Full stack (development):
 
 ```bash
-# Install dependencies
-pip install websockets
+# Terminal 1 — Mock simulator (replaces CAN Bus + RPi Core)
+cd module_can && python mock_simulator.py
 
-# Run simulator (single car, drift_run scenario)
-python module_can/mock_simulator.py
+# Terminal 2 — BoxLab UI
+cd module_boxlab && npm start
 
-# Run with 2 cars
-python module_can/mock_simulator.py --cars 2
-
-# Available scenarios: drift_run | warm_up | pit | alarm_test
-python module_can/mock_simulator.py --scenario alarm_test
+# Terminal 3 — In-Car UI (optional)
+cd module_incar && PORT=3001 npm start
 ```
 
-WebSocket output: `ws://localhost:8765/ws/telemetry/CAR_01`
+### Full hardware stack (RPi):
+
+```bash
+# RPi — Step 1: Core Server
+cd module_core && python core_server.py
+
+# RPi — Step 2: CAN Bus reader
+cd module_can && python can_reader.py --channel can0 --dbc ecu.dbc
+
+# RPi — Step 3: LTE Sender (to BoxLab IP)
+cd module_lte && python lte_sender.py --car CAR_01 --host 192.168.1.100
+
+# BoxLab — Receiver
+cd module_lte && python lte_receiver.py
+
+# BoxLab — UI
+cd module_boxlab && npm start
+```
+
+### Mock CAN (no hardware):
+
+```bash
+cd module_can && python can_reader.py --mock
+```
 
 ## Shared Interface
 
-All modules communicate via the standardized telemetry object defined in:
+All modules communicate via the standardized telemetry object:
 - `shared/telemetry_schema.py` — data structures
 - `shared/constants.py` — constants, units, ranges
 
@@ -48,13 +70,11 @@ All modules communicate via the standardized telemetry object defined in:
 UI supports: `en` · `sl` · `de` · `it` · `hr`  
 Translations: `module_boxlab/src/locales/`
 
-All code, variable names, comments and UI labels are in **English**.
-
 ## Sprint Progress
 
 - [x] Sprint 1 — Interfaces + Mock Simulator
-- [ ] Sprint 2 — BoxLab UI (React)
-- [ ] Sprint 3 — In-Car UI
-- [ ] Sprint 4 — LTE Transport Module
-- [ ] Sprint 5 — RPi Core + CAN Bus integration
-- [ ] Sprint 6 — Full hardware integration
+- [x] Sprint 2 — BoxLab UI (React)
+- [x] Sprint 3 — In-Car UI (analog gauges, carbon fiber, responsive)
+- [x] Sprint 4 — LTE Transport (delta encoding, msgpack, reconnect)
+- [x] Sprint 5 — RPi Core (compute engine, SQLite storage, WS server)
+- [x] Sprint 6 — CAN Bus reader (python-can, DBC support, socketcan)
