@@ -1,0 +1,6 @@
+.DS_Store
+module_boxlab/node_modules/
+module_boxlab/build/
+__pycache__/
+*.pyc
+.env
