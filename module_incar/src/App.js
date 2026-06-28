@@ -1,5 +1,6 @@
 import './styles.css';
 import { useTelemetry } from './hooks/useTelemetry';
+import { useGaugeSize } from './hooks/useGaugeSize';
 import AnalogGauge from './components/AnalogGauge';
 import AlarmBanner from './components/AlarmBanner';
 
@@ -91,6 +92,7 @@ function BottomBar({ data }) {
 export default function App() {
   const { data, status } = useTelemetry();
   const { raw, computed } = data;
+  const { small, large, logoW } = useGaugeSize();
 
   const driftColor = computed.drift_angle > 45 ? '#CC1111' : '#FFB74D';
 
@@ -105,7 +107,7 @@ export default function App() {
           min={0} max={8}
           label="OIL PRESS"
           unit="bar"
-          size={150}
+          size={small}
           color="#C9A84C"
           warnValue={1.5} critValue={1.0}
           warningDir="low"
@@ -120,14 +122,14 @@ export default function App() {
             min={0} max={8500}
             label="ENGINE RPM"
             unit="rpm"
-            size={240}
+            size={large}
             color="#CC1111"
             warnValue={7200} critValue={8000}
             warningDir="high"
             decimals={0}
             ticks={8}
           />
-          <img src="/logo.png" alt="InoCore" className="center-logo" />
+          <img src="/logo.png" alt="InoCore" className="center-logo" style={{ width: logoW }} />
           <div className="center-strip">
             <div className="gear-box">
               <div className="gear-label">GEAR</div>
@@ -148,7 +150,7 @@ export default function App() {
           min={60} max={130}
           label="COOLANT"
           unit="°C"
-          size={150}
+          size={small}
           color="#4FC3F7"
           warnValue={100} critValue={110}
           warningDir="high"
@@ -162,7 +164,7 @@ export default function App() {
           min={60} max={150}
           label="OIL TEMP"
           unit="°C"
-          size={150}
+          size={small}
           color="#C9A84C"
           warnValue={120} critValue={135}
           warningDir="high"
@@ -176,7 +178,7 @@ export default function App() {
           min={0} max={3.0}
           label="TURBO BOOST"
           unit="bar"
-          size={150}
+          size={small}
           color="#CE93D8"
           warnValue={2.0} critValue={2.4}
           warningDir="high"

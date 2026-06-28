@@ -18,8 +18,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, sans-serif;
-  width: 800px;
-  height: 480px;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   user-select: none;
 }
@@ -51,8 +51,8 @@ body::before {
 .app {
   position: relative;
   z-index: 1;
-  width: 800px;
-  height: 480px;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 10px 16px 8px;
@@ -98,7 +98,7 @@ body::before {
 
 /* Logo med kazalniki */
 .center-logo {
-  width: 140px;
+  width: 69px;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 0 6px rgba(204,17,17,0.5));
