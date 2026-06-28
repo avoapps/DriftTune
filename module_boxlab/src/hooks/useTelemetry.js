@@ -174,9 +174,12 @@ function generateMockFrame(state, startTime) {
 
 /* ── Hook ────────────────────────────────────────────────────────────── */
 
-export default function useTelemetry(carId = 'CAR_01') {
+// config: { mode: 'simulator'|'websocket', wsHost, wsPort }
+export default function useTelemetry(carId = 'CAR_01', config = {}) {
+  const { mode = 'simulator', wsHost = 'localhost', wsPort = '8765' } = config;
+
   const [data,      setData]      = useState(null);
-  const [connState, setConnState] = useState('disconnected');
+  const [connState, setConnState] = useState('off');
   const [lastUpdate,setLastUpdate]= useState(null);
   const [hz,        setHz]        = useState(0);
 
@@ -185,51 +188,79 @@ export default function useTelemetry(carId = 'CAR_01') {
   const mockRef  = useRef(null);
   const stateRef = useRef(null);
   const startRef = useRef(0);
-  const delayRef = useRef(1000);
   const fpsRef   = useRef({ count: 0, ts: Date.now() });
 
+  /* simulator state — reset when carId changes */
   useEffect(() => {
-    /* fresh simulator state for this carId */
     stateRef.current = { carId, rpm: 6500, tps: 80, drift: 38, steering: 0, boost: 1.6, spd: 65,
                          sessionId: `MOCK_${carId}_${Date.now()}` };
     startRef.current = Date.now() / 1000;
-    delayRef.current = 1000;
+  }, [carId]);
 
-    const tick = () => {
-      fpsRef.current.count++;
-      const now = Date.now();
-      if (now - fpsRef.current.ts >= 1000) {
-        setHz(Math.round(fpsRef.current.count));
-        fpsRef.current = { count: 0, ts: now };
-      }
-    };
+  const tick = useRef(() => {
+    fpsRef.current.count++;
+    const now = Date.now();
+    if (now - fpsRef.current.ts >= 1000) {
+      setHz(Math.round(fpsRef.current.count));
+      fpsRef.current = { count: 0, ts: now };
+    }
+  }).current;
 
-    const startMock = () => {
-      if (mockRef.current) return;
-      mockRef.current = setInterval(() => {
-        const frame = generateMockFrame(stateRef.current, startRef.current);
-        setData(frame);
-        setLastUpdate(Date.now());
-        tick();
-      }, 50);
-    };
+  const startMock = useRef(() => {
+    if (mockRef.current) return;
+    mockRef.current = setInterval(() => {
+      if (!stateRef.current) return;
+      const frame = generateMockFrame(stateRef.current, startRef.current);
+      setData(frame);
+      setLastUpdate(Date.now());
+      tick();
+    }, 50);
+  }).current;
 
-    const stopMock = () => {
-      if (mockRef.current) { clearInterval(mockRef.current); mockRef.current = null; }
-    };
+  const stopMock = useRef(() => {
+    if (mockRef.current) { clearInterval(mockRef.current); mockRef.current = null; }
+  }).current;
 
-    /* start mock immediately — UI is never empty */
-    startMock();
-    setConnState('reconnecting');
+  const closeWS = useRef(() => {
+    clearTimeout(retryRef.current);
+    if (wsRef.current) {
+      wsRef.current.onopen  = null;
+      wsRef.current.onclose = null;
+      wsRef.current.onerror = null;
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+  }).current;
+
+  /* react to mode / host / port changes */
+  useEffect(() => {
+    if (mode === 'off') {
+      closeWS();
+      stopMock();
+      setConnState('off');
+      setData(null);
+      return;
+    }
+
+    if (mode === 'simulator') {
+      closeWS();
+      setConnState('simulator');
+      startMock();
+      return () => stopMock();
+    }
+
+    /* websocket mode */
+    stopMock();
+    setConnState('connecting');
 
     const connect = () => {
       try {
-        const ws = new WebSocket(`ws://localhost:8765/ws/telemetry/${carId}`);
+        const url = `ws://${wsHost}:${wsPort}/ws/telemetry/${carId}`;
+        const ws  = new WebSocket(url);
         wsRef.current = ws;
 
         ws.onopen = () => {
           setConnState('connected');
-          delayRef.current = 1000;
           stopMock();
         };
 
@@ -238,19 +269,15 @@ export default function useTelemetry(carId = 'CAR_01') {
             setData(JSON.parse(e.data));
             setLastUpdate(Date.now());
             tick();
-          } catch { /* malformed frame — ignore */ }
+          } catch { /* malformed frame */ }
         };
 
         ws.onclose = () => {
-          setConnState('reconnecting');
+          setConnState('disconnected');
           startMock();
-          retryRef.current = setTimeout(() => {
-            delayRef.current = Math.min(delayRef.current * 2, 30000);
-            connect();
-          }, delayRef.current);
         };
 
-        ws.onerror = () => { /* onclose will fire next */ };
+        ws.onerror = () => { /* onclose fires next */ };
 
       } catch {
         setConnState('disconnected');
@@ -261,16 +288,11 @@ export default function useTelemetry(carId = 'CAR_01') {
     connect();
 
     return () => {
+      closeWS();
       stopMock();
-      clearTimeout(retryRef.current);
-      if (wsRef.current) {
-        wsRef.current.onclose = null;
-        wsRef.current.onerror = null;
-        wsRef.current.close();
-        wsRef.current = null;
-      }
     };
-  }, [carId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, wsHost, wsPort, carId]);
 
   return { data, connected: connState === 'connected', connState, lastUpdate, hz };
 }

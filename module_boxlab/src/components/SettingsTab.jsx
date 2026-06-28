@@ -52,10 +52,15 @@ const THRESHOLD_LABELS = {
 
 const CAR_COLORS = ['#CC1111','#4FC3F7','#00C853','#FFB74D','#CE93D8','#80CBC4','#C9A84C','#FF6B6B'];
 
-export default function SettingsTab({ t, lang, setLang }) {
+export default function SettingsTab({ t, lang, setLang, connConfig, setConnConfig }) {
   const [settings, setSettings] = useState(loadSettings);
   const [saved, setSaved] = useState(false);
   const [section, setSection] = useState('connection');
+  const [localMode, setLocalMode] = useState(
+    connConfig?.mode === 'off' ? 'simulator' : (connConfig?.mode || 'simulator')
+  );
+  const [localHost, setLocalHost] = useState(connConfig?.wsHost || 'localhost');
+  const [localPort, setLocalPort] = useState(connConfig?.wsPort || '8765');
 
   function update(path, value) {
     setSettings(prev => {
@@ -69,11 +74,26 @@ export default function SettingsTab({ t, lang, setLang }) {
   }
 
   function handleSave() {
-    saveSettings(settings);
+    saveSettings({ ...settings, _v: 2, connMode: localMode, wsHost: localHost, wsPort: localPort });
     if (settings.lang !== lang) setLang(settings.lang);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
+
+  function handleConnect() {
+    const cfg = { mode: localMode, wsHost: localHost, wsPort: localPort };
+    saveSettings({ ...settings, _v: 2, connMode: localMode, wsHost: localHost, wsPort: localPort });
+    setConnConfig(cfg);
+  }
+
+  function handleDisconnect() {
+    setConnConfig({ mode: 'off', wsHost: localHost, wsPort: localPort });
+    saveSettings({ ...settings, _v: 2, connMode: 'off', wsHost: localHost, wsPort: localPort });
+  }
+
+  const isActiveMode = connConfig?.mode === localMode &&
+    (localMode === 'simulator' || (connConfig?.wsHost === localHost && connConfig?.wsPort === localPort));
+  const isConnected = connConfig?.mode === 'websocket';
 
   function addCar() {
     const id = `CAR_0${settings.cars.length + 1}`;
@@ -104,24 +124,141 @@ export default function SettingsTab({ t, lang, setLang }) {
 
         {/* ── Connection ── */}
         {section === 'connection' && (
-          <div className="settings-section">
-            <div className="settings-title">WebSocket Connection</div>
-            <div className="settings-desc">Address of the RPi Core Server or LTE Receiver.</div>
-            <div className="settings-row">
-              <label className="settings-label">Host / IP</label>
-              <input className="settings-input" value={settings.wsHost}
-                onChange={e => update('wsHost', e.target.value)}
-                placeholder="localhost or 192.168.1.100" />
+          <div className="conn3-grid">
+
+            {/* ── 20% Source list ── */}
+            <div className="conn3-panel source-panel">
+              <div className="conn3-panel-title">Source</div>
+              <div className="conn3-source-list">
+                {[
+                  { id: 'simulator',  icon: '⬡', name: 'Simulator',    desc: 'Built-in · 20 Hz' },
+                  { id: 'websocket',  icon: '⬡', name: 'Core Server',  desc: 'WebSocket · RPi' },
+                  { id: 'obd',        icon: '⬡', name: 'OBD-II',       desc: 'USB · BT · WiFi' },
+                  { id: 'can',        icon: '⬡', name: 'CAN Bus',      desc: 'SocketCAN · DBC' },
+                ].map(s => (
+                  <button key={s.id}
+                    className={`conn3-source-btn ${localMode === s.id ? 'active' : ''}`}
+                    onClick={() => setLocalMode(s.id)}>
+                    <div className="conn3-source-name">{s.name}</div>
+                    <div className="conn3-source-desc">{s.desc}</div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="settings-row">
-              <label className="settings-label">Port</label>
-              <input className="settings-input" value={settings.wsPort}
-                onChange={e => update('wsPort', e.target.value)}
-                placeholder="8765" style={{ maxWidth: 120 }} />
+
+            {/* ── 30% Configuration ── */}
+            <div className="conn3-panel config-panel">
+              <div className="conn3-panel-title">Configuration</div>
+
+              {localMode === 'simulator' && (
+                <div className="conn3-cfg-note">No configuration required.<br />Built-in mock data generator.</div>
+              )}
+
+              {localMode === 'websocket' && (
+                <div className="conn3-cfg-fields">
+                  <div className="conn3-field-row">
+                    <label className="conn3-field-label">Host / IP</label>
+                    <input className="conn3-field-input" value={localHost}
+                      onChange={e => setLocalHost(e.target.value)} placeholder="localhost" />
+                  </div>
+                  <div className="conn3-field-row">
+                    <label className="conn3-field-label">Port</label>
+                    <input className="conn3-field-input" value={localPort}
+                      onChange={e => setLocalPort(e.target.value)} placeholder="8765" />
+                  </div>
+                  <div className="conn3-url-preview">ws://{localHost}:{localPort}/ws/telemetry/…</div>
+                </div>
+              )}
+
+              {localMode === 'obd' && (
+                <div className="conn3-cfg-fields">
+                  <div className="conn3-field-row">
+                    <label className="conn3-field-label">Mode</label>
+                    <select className="conn3-field-input"
+                      value={settings.obdMode || 'usb'}
+                      onChange={e => update('obdMode', e.target.value)}>
+                      <option value="usb">USB Serial</option>
+                      <option value="bt">Bluetooth</option>
+                      <option value="wifi">WiFi ELM327</option>
+                    </select>
+                  </div>
+                  <div className="conn3-field-row">
+                    <label className="conn3-field-label">Port</label>
+                    <input className="conn3-field-input"
+                      value={settings.obdPort || ''}
+                      onChange={e => update('obdPort', e.target.value)}
+                      placeholder="/dev/cu.OBDII" />
+                  </div>
+                  <div className="conn3-field-row">
+                    <label className="conn3-field-label">Baud</label>
+                    <select className="conn3-field-input"
+                      value={settings.obdBaud || ''}
+                      onChange={e => update('obdBaud', e.target.value)}>
+                      <option value="">Auto</option>
+                      <option value="9600">9600</option>
+                      <option value="38400">38400</option>
+                      <option value="115200">115200</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {localMode === 'can' && (
+                <div className="conn3-cfg-fields">
+                  <div className="conn3-field-row">
+                    <label className="conn3-field-label">Interface</label>
+                    <input className="conn3-field-input"
+                      value={settings.canInterface || 'can0'}
+                      onChange={e => update('canInterface', e.target.value)}
+                      placeholder="can0" />
+                  </div>
+                  <div className="conn3-field-row">
+                    <label className="conn3-field-label">Bitrate</label>
+                    <select className="conn3-field-input"
+                      value={settings.canBitrate || '500000'}
+                      onChange={e => update('canBitrate', e.target.value)}>
+                      <option value="125000">125 kbps</option>
+                      <option value="250000">250 kbps</option>
+                      <option value="500000">500 kbps</option>
+                      <option value="1000000">1 Mbps</option>
+                    </select>
+                  </div>
+                  <div className="conn3-field-row">
+                    <label className="conn3-field-label">DBC file</label>
+                    <input className="conn3-field-input"
+                      value={settings.canDbc || ''}
+                      onChange={e => update('canDbc', e.target.value)}
+                      placeholder="path/to/car.dbc" />
+                  </div>
+                </div>
+              )}
+
+              {/* Action bar */}
+              <div className="conn3-action-bar">
+                <div className={`conn3-status-dot ${connConfig?.mode || 'off'}`} />
+                <span className="conn3-status-text">
+                  {{ simulator: 'Simulator', websocket: 'Core Server', obd: 'OBD-II', can: 'CAN Bus', off: 'Off' }[connConfig?.mode] || 'Off'}
+                </span>
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                  {(connConfig?.mode && connConfig.mode !== 'off') && (
+                    <button className="conn-btn disconnect" onClick={handleDisconnect}>⏹</button>
+                  )}
+                  <button className="conn-btn connect" onClick={handleConnect} disabled={isActiveMode}>
+                    {isActiveMode ? '✓ Active' : '▶ Connect'}
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="settings-ws-preview">
-              ws://{settings.wsHost}:{settings.wsPort}/ws/telemetry/CAR_01
+
+            {/* ── 50% Empty slot ── */}
+            <div className="conn3-panel slot-panel">
+              <div className="conn3-panel-title">Status</div>
+              <div className="conn3-slot-empty">
+                <div className="conn3-slot-icon">◎</div>
+                <div className="conn3-slot-text">Reserved for connection status,<br />signal preview & diagnostics.</div>
+              </div>
             </div>
+
           </div>
         )}
 

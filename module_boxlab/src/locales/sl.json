@@ -75,6 +75,7 @@
   "ui": {
     "dashboard":      "Nadzorna plošča",
     "analysis":       "Analiza",
+    "obd":            "OBD Skener",
     "settings":       "Nastavitve",
     "cars":           "Avti",
     "session":        "Seja",

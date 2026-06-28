@@ -75,6 +75,7 @@
   "ui": {
     "dashboard":      "Dashboard",
     "analysis":       "Analysis",
+    "obd":            "OBD Scanner",
     "settings":       "Settings",
     "cars":           "Cars",
     "session":        "Session",
