@@ -1,0 +1,225 @@
+:root {
+  --bg: #0D0D10;
+  --card: #14141A;
+  --border: rgba(255,255,255,0.07);
+  --red: #CC1111;
+  --text: #F0F0F0;
+  --muted: #6B6B7E;
+  --warn: #FFB800;
+  --ok: #00C853;
+  --drift: #FFB74D;
+  --ai: #80CBC4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  width: 800px;
+  height: 480px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 800px;
+  height: 480px;
+  padding: 8px;
+  gap: 6px;
+}
+
+/* ── RPM BAR ── */
+.rpm-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.rpm-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  width: 28px;
+  letter-spacing: 0.05em;
+}
+.rpm-value {
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  width: 56px;
+  text-align: right;
+}
+.rpm-track {
+  flex: 1;
+  height: 18px;
+  background: #1A1A22;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.rpm-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.06s linear, background 0.1s;
+}
+.rpm-redline {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--red);
+  opacity: 0.6;
+}
+
+/* ── BIG NUMBERS ── */
+.big-numbers {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  align-items: center;
+}
+.big-cell {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+}
+.center-cell {
+  flex: 0.6;
+  background: #1A1022;
+  border-color: rgba(204,17,17,0.3);
+}
+.big-val {
+  font-family: monospace;
+  font-weight: 900;
+  line-height: 1;
+}
+.big-val.speed { font-size: 4.5rem; color: #4FC3F7; }
+.big-val.gear  { font-size: 5rem;   color: var(--text); }
+.big-val.drift { font-size: 4rem; }
+.big-unit {
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+/* ── INPUT BARS ── */
+.input-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.input-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.input-label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  width: 24px;
+  letter-spacing: 0.05em;
+}
+.input-track {
+  flex: 1;
+  height: 14px;
+  background: #1A1A22;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.input-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.06s linear;
+}
+.steering-track {
+  position: relative;
+  overflow: visible;
+}
+.steering-center {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--muted);
+}
+.steering-needle {
+  position: absolute;
+  top: -2px;
+  width: 3px;
+  height: 18px;
+  background: #4FC3F7;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: left 0.06s linear;
+}
+.input-val {
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  width: 34px;
+  text-align: right;
+}
+
+/* ── STATUS ROW ── */
+.status-row {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.status-cell {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 2px;
+  min-width: 0;
+}
+.stat-label {
+  font-size: 0.5rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+.stat-val {
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.stat-val.sector { color: var(--red); }
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-bottom: 2px;
+}
+
+/* ── ALARM BANNER ── */
+.alarm-banner {
+  text-align: center;
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 2px solid;
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+}
