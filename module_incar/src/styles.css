@@ -95,11 +95,14 @@ body::before {
   align-items: center;
   justify-content: center;
 }
-.top-logo-img {
-  height: 26px;
-  width: auto;
+
+/* Logo med kazalniki */
+.center-logo {
+  width: 140px;
+  height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 4px rgba(204,17,17,0.4));
+  filter: drop-shadow(0 0 6px rgba(204,17,17,0.5));
+  margin: -4px 0;
 }
 .status-pill {
   font-size: 0.55rem;

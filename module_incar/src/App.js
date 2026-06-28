@@ -28,7 +28,7 @@ function TopBar({ data, status }) {
       </div>
 
       <div className="top-logo">
-        <img src="/logo.png" alt="InoCore Performance Motorsport" className="top-logo-img" />
+        <span style={{ fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.2em', color: '#C9A84C' }}>DriftTune</span>
       </div>
 
       <div className="top-right">
@@ -113,7 +113,7 @@ export default function App() {
           ticks={8}
         />
 
-        {/* Center large: RPM */}
+        {/* Center large: RPM + logo */}
         <div className="gauge-center">
           <AnalogGauge
             value={raw.rpm}
@@ -127,6 +127,7 @@ export default function App() {
             decimals={0}
             ticks={8}
           />
+          <img src="/logo.png" alt="InoCore" className="center-logo" />
           <div className="center-strip">
             <div className="gear-box">
               <div className="gear-label">GEAR</div>
